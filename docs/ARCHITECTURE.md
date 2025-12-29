@@ -301,9 +301,26 @@ Para información detallada sobre decisiones arquitectónicas, alternativas cons
 
 ### 8.3 Manejo de Errores
 
-- Todos los errores se manejan de forma centralizada mediante `@RestControllerAdvice`
-- Formato uniforme de errores para facilitar el consumo desde el frontend
-- Ver detalles en [API-CONTRACT.md](./API-CONTRACT.md)
+- Todos los errores se manejan de forma centralizada mediante `@RestControllerAdvice` (`GlobalExceptionHandler`)
+- Formato uniforme de errores con `ApiErrorResponse` que incluye:
+  - `timestamp`: Fecha y hora del error
+  - `status`: Código HTTP
+  - `error`: Tipo de error
+  - `message`: Mensaje descriptivo en español
+  - `path`: Ruta del endpoint
+  - `details`: Detalles adicionales (opcional, para errores de validación)
+
+**Handlers implementados:**
+- `MethodArgumentNotValidException` → 400 (validaciones de DTOs)
+- `ConstraintViolationException` → 400 (validaciones de parámetros)
+- `HttpMessageNotReadableException` → 400 (JSON mal formado)
+- `ServiceUnavailableException` → 503 (servicio DS no disponible)
+- `Exception` (genérico) → 500 (errores inesperados)
+
+**Excepciones personalizadas:**
+- `ServiceUnavailableException`: Para cuando el servicio de Data Science no está disponible
+
+Ver detalles completos en [API-CONTRACT.md](./API-CONTRACT.md)
 
 ---
 
