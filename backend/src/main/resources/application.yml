@@ -1,0 +1,20 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api   # prefijo para tus endpoints REST
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sentimentdb   # nombre de tu base
+    username: postgres                                  # tu usuario
+    password: tu_password                               # tu contraseña
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update          # crea/actualiza tablas según tus entidades
+    show-sql: true              # muestra queries en consola
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
