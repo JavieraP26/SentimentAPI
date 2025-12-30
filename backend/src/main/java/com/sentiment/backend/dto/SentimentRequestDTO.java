@@ -5,13 +5,15 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+//Agregar el import EnglishText
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SentimentRequestDTO {
 
-    @NotBlank(message = "El texto no puede estar vacío.")
-    @Size(min = 5, max = 500, message = "El texto debe tener entre 5 y 500 caracteres")
-    private String texto;
+    @NotBlank(message = "El campo 'text' no puede estar vacío.")
+    @Size(min = 10, max = 200, message = "El campo 'text' texto debe tener entre 10 y 200 caracteres")
+    //@EnglishText(message = "El campo 'text' debe contener solo texto en inglés")
+    private String text;
 }

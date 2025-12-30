@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SentimentResponseDTO {
-    private String sentimiento; // Ej: "positivo", "negativo", "neutro" private double score; // Ej: 0.85
+    private String prevision;
+    private double probabilidad;
 }
