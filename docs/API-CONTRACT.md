@@ -150,23 +150,31 @@ La API devuelve errores en un formato uniforme para facilitar el manejo desde el
 
 ### 4.1 Formato de Error Estándar
 
-Todos los errores siguen el siguiente formato:
+Todos los errores siguen el siguiente formato estandarizado:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "Descripción clara del problema en español"
+  "message": "Descripción clara del problema en español",
+  "path": "/sentiment",
+  "details": {
+    "text": "El campo 'text' es obligatorio"
+  }
 }
 ```
 
 **Campos:**
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `status` | Number | Código de estado HTTP |
-| `error` | String | Tipo de error (nombre del estado HTTP) |
-| `message` | String | Mensaje descriptivo del error en español |
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `timestamp` | String (ISO 8601) | Sí | Fecha y hora en que ocurrió el error |
+| `status` | Number | Sí | Código de estado HTTP |
+| `error` | String | Sí | Tipo de error (nombre del estado HTTP) |
+| `message` | String | Sí | Mensaje descriptivo del error en español |
+| `path` | String | Sí | Ruta del endpoint donde ocurrió el error |
+| `details` | Object | No | Detalles adicionales del error. Presente en errores de validación con mapeo campo → mensaje |
 
 ### 4.2 Códigos de Estado HTTP
 
@@ -191,9 +199,14 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "El campo 'text' es obligatorio"
+  "message": "Error de validación en los datos de entrada",
+  "path": "/sentiment",
+  "details": {
+    "text": "El campo 'text' es obligatorio"
+  }
 }
 ```
 
@@ -211,9 +224,14 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "El campo 'text' no puede estar vacío"
+  "message": "Error de validación en los datos de entrada",
+  "path": "/sentiment",
+  "details": {
+    "text": "El campo 'text' no puede estar vacío"
+  }
 }
 ```
 
@@ -231,9 +249,14 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "El campo 'text' debe tener al menos 10 caracteres"
+  "message": "Error de validación en los datos de entrada",
+  "path": "/sentiment",
+  "details": {
+    "text": "El campo 'text' debe tener al menos 10 caracteres"
+  }
 }
 ```
 
@@ -251,9 +274,14 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "El campo 'text' no puede exceder 200 caracteres"
+  "message": "Error de validación en los datos de entrada",
+  "path": "/sentiment",
+  "details": {
+    "text": "El campo 'text' no puede exceder 200 caracteres"
+  }
 }
 ```
 
@@ -271,9 +299,14 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "El texto debe estar escrito en inglés. El sistema solo procesa textos en inglés para garantizar la exactitud del análisis."
+  "message": "Error de validación en los datos de entrada",
+  "path": "/sentiment",
+  "details": {
+    "text": "El texto debe estar escrito en inglés. El sistema solo procesa textos en inglés para garantizar la exactitud del análisis."
+  }
 }
 ```
 
@@ -283,9 +316,11 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 500,
   "error": "Internal Server Error",
-  "message": "No fue posible procesar el comentario. Inténtalo nuevamente más tarde."
+  "message": "Error interno del servidor",
+  "path": "/sentiment"
 }
 ```
 
@@ -295,20 +330,34 @@ Todos los errores siguen el siguiente formato:
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 503,
   "error": "Service Unavailable",
-  "message": "El servicio de análisis de sentimiento no está disponible en este momento. Por favor, intenta más tarde."
+  "message": "El servicio de análisis de sentimiento no está disponible en este momento. Por favor, intenta más tarde.",
+  "path": "/sentiment"
 }
 ```
 
 ### 4.4 Implementación de Manejo de Errores
 
-La API implementa manejo centralizado de errores mediante `@RestControllerAdvice` en Spring Boot para:
+La API implementa manejo centralizado de errores mediante `@RestControllerAdvice` en Spring Boot (`GlobalExceptionHandler`).
 
-- Capturar excepciones de validación
-- Formatear respuestas de error de manera uniforme
-- Proporcionar mensajes claros y útiles para el frontend
-- Loggear errores para debugging
+**Handlers implementados:**
+
+| Excepción | Código HTTP | Cuándo se activa |
+|-----------|-------------|------------------|
+| `MethodArgumentNotValidException` | 400 | Errores de validación en DTOs con `@Valid` (campos faltantes, longitud, formato) |
+| `ConstraintViolationException` | 400 | Violaciones de restricciones en parámetros de URL/path |
+| `HttpMessageNotReadableException` | 400 | JSON mal formado o no deserializable |
+| `ServiceUnavailableException` | 503 | Servicio de Data Science no disponible |
+| `Exception` (genérico) | 500 | Cualquier error no capturado por handlers específicos |
+
+**Características:**
+- Formato uniforme de errores con `ApiErrorResponse`
+- Detalles de validación por campo en el objeto `details`
+- Logging de errores para debugging
+- Mensajes en español para facilitar comprensión
+- No expone detalles internos del sistema al cliente (seguridad)
 
 ---
 
@@ -345,9 +394,14 @@ curl -X POST http://localhost:8080/sentiment \
 
 ```json
 {
+  "timestamp": "2025-01-15T10:30:00",
   "status": 400,
   "error": "Bad Request",
-  "message": "El campo 'text' debe tener al menos 10 caracteres"
+  "message": "Error de validación en los datos de entrada",
+  "path": "/sentiment",
+  "details": {
+    "text": "El campo 'text' debe tener al menos 10 caracteres"
+  }
 }
 ```
 
