@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SentimentResponseDTO {
     private String prevision;
-    private double probabilidad;
+    private Double probabilidad;
 }
