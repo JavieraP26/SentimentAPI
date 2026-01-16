@@ -1,0 +1,7 @@
+flask
+scikit-learn
+pandas
+nltk
+joblib
+numpy
+deep_translator
