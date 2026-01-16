@@ -15,10 +15,12 @@ package com.sentiment.backend.exception;
 public class ServiceUnavailableException extends RuntimeException {
 
     public ServiceUnavailableException(String message) {
+        // Mensaje amigable para el cliente final
         super(message);
     }
 
     public ServiceUnavailableException(String message, Throwable cause) {
+        // Incluye causa para logging interno
         super(message, cause);
     }
 }
