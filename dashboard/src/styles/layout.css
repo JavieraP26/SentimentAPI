@@ -1,0 +1,36 @@
+/* --- LAYOUT Y CONTENEDORES --- */
+.bg-glow {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 200px;
+    width: 100%;
+}
+
+.chart-wrapper-mini {
+    position: relative;
+    height: 120px;
+    width: 120px;
+}
+
+.icon-square {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+}
+
+.bg-dark-gradient {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
