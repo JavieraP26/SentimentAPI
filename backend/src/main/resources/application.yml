@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/sentimentdb
+    url: jdbc:postgresql://localhost:5432/sentiment_db
     username: postgres
-    password: tu_password
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:

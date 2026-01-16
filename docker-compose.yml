@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: sentiment-postgres
+    environment:
+      POSTGRES_DB: sentiment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - sentiment_pgdata:/var/lib/postgresql/data
+
+  datascience:
+    build:
+      context: ./datascience/python_service
+      dockerfile: Dockerfile
+    container_name: sentiment-datascience
+    ports:
+      - "8001:8001"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sentiment-backend
+    depends_on:
+      - postgres
+      - datascience
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sentiment_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      DS_SERVICE_URL: http://datascience:8001
+    ports:
+      - "8080:8080"
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: sentiment-dashboard
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  sentiment_pgdata:

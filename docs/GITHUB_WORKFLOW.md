@@ -154,12 +154,12 @@ Seguimos el estándar **Conventional Commits** para mantener un historial claro 
 
 | Tipo | Cuándo usar | Ejemplo |
 |------|-------------|---------|
-| `feat` | Nueva funcionalidad | `feat: agregar endpoint POST /sentiment` |
+| `feat` | Nueva funcionalidad | `feat: agregar endpoint POST /v1/sentiment` |
 | `fix` | Corrección de bugs | `fix: corregir validación de longitud mínima` |
 | `docs` | Cambios en documentación | `docs: actualizar API-CONTRACT.md con nuevos ejemplos` |
 | `style` | Cambios de formato (espacios, comas, etc.) | `style: formatear código según estándares` |
 | `refactor` | Refactorización de código | `refactor: extraer lógica de validación a clase separada` |
-| `test` | Agregar o modificar tests | `test: agregar tests unitarios para ValidationChain` |
+| `test` | Agregar o modificar tests | `test: agregar tests unitarios para validaciones Bean` |
 | `chore` | Tareas de mantenimiento | `chore: actualizar dependencias Maven` |
 | `perf` | Mejoras de rendimiento | `perf: optimizar consulta a base de datos` |
 
@@ -168,13 +168,13 @@ Seguimos el estándar **Conventional Commits** para mantener un historial claro 
 **Buenos ejemplos:**
 
 ```
-feat: agregar endpoint POST /sentiment para análisis de sentimiento
+feat: agregar endpoint POST /v1/sentiment para análisis de sentimiento
 
 docs: actualizar ARCHITECTURE.md con diagrama de flujo
 
-fix: corregir validación de idioma inglés en ValidationChain
+fix: corregir validación de longitud en Bean Validation
 
-refactor: implementar patrón Chain of Responsibility para validaciones
+refactor: ajustar validaciones con Bean Validation
 
 test: agregar tests unitarios para SentimentService
 
@@ -224,7 +224,7 @@ gh pr create --base developer --head feature/nombre-de-la-feature --title "feat:
 Seguir el mismo formato que los commits:
 
 ```
-feat: agregar endpoint /sentiment
+feat: agregar endpoint /v1/sentiment
 fix: corregir validación de longitud
 docs: actualizar API-CONTRACT.md
 ```
