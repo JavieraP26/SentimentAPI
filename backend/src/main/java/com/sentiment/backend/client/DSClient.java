@@ -1,5 +1,7 @@
 package com.sentiment.backend.client;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.sentiment.backend.dto.DSPredictionDTO;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -97,6 +100,47 @@ public class DSClient {
         } catch (RestClientException e) {
             log.error("Error al llamar a DS: {}", e.getMessage());
             throw e; // Re-lanzar para que GlobalExceptionHandler lo maneje
+        }
+    }
+
+    /**
+     * Llama al endpoint /predict_batch de Data Science para análisis masivo.
+     *
+     * @param texts Lista de textos a analizar
+     * @return Lista de predicciones (mismo orden que los textos)
+     * @throws RestClientException si DS no responde o retorna error HTTP
+     */
+    public List<DSPredictionDTO> predictBatch(List<String> texts) {
+        // El contrato de DS espera un JSON con "texts": [ ... ]
+        Map<String, Object> body = Map.of("texts", texts);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        String url = dsServiceUrl + "/predict_batch";
+
+        log.info("Llamando a DS batch: {}", url);
+
+        try {
+            ResponseEntity<DSPredictionDTO[]> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    DSPredictionDTO[].class
+            );
+
+            DSPredictionDTO[] predictions = response.getBody();
+            if (predictions == null) {
+                log.error("DS batch retornó body vacío");
+                throw new RestClientException("DS batch response body is null");
+            }
+
+            // Convertimos el array a lista manteniendo el orden
+            return Arrays.asList(predictions);
+        } catch (RestClientException e) {
+            log.error("Error al llamar a DS batch: {}", e.getMessage());
+            throw e;
         }
     }
 }
