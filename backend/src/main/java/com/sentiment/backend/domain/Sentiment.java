@@ -116,7 +116,6 @@ public class Sentiment {
      * 3. Tabla separada: TopFeature(id, sentimentId, palabra)
      *    - Mayor normalización, más complejo
      *
-     * TODO: Confirmar formato definitivo con el equipo antes de integración con dashboard.
      */
     @Column(length = 500)
     private String palabrasClave;

@@ -119,7 +119,7 @@ public class AnalyticsService {
         } else {
             pageResult = sentimentRepository.findByRangeAndSentiment(start, end, sentiment, pageable);
             total = sentimentRepository.countByRangeAndSentiment(start, end, sentiment);
-            recordsForStats = sentimentRepository.findByCreatedAtBetween(start, end);
+            recordsForStats = sentimentRepository.findAllByRangeAndSentiment(start, end, sentiment);
         }
         long positivos = recordsForStats.stream().filter(r -> POSITIVO.equalsIgnoreCase(r.getPrevision())).count();
         long negativos = recordsForStats.stream().filter(r -> NEGATIVO.equalsIgnoreCase(r.getPrevision())).count();

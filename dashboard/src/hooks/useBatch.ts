@@ -28,7 +28,9 @@ export function useBatch(onSuccess?: () => Promise<void> | void) {
 
         try {
             const content = await file.text();
-            const texts = extractTextsFromCsv(content);
+            const texts = extractTextsFromCsv(content).filter(
+                (text) => text.length >= 20 && text.length <= 500
+            );
 
             if (texts.length === 0) {
                 setMensaje('No se encontraron textos válidos en el CSV.');

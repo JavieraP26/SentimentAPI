@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { DateRangeAnalyticsResponse } from '../types';
 import { DetailModal } from './DetailModal';
 
@@ -33,6 +33,10 @@ export function RangePanel({
     onPageChange
 }: RangePanelProps) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+    useEffect(() => {
+        setOpenIndex(null);
+    }, [rangeData]);
+    const startIndex = rangeData ? rangeData.page * rangeData.size : 0;
     return (
         <div className="col-12 animate-fade-up">
             <div className="card glass-card">
@@ -137,7 +141,7 @@ export function RangePanel({
                                                 <button
                                                     type="button"
                                                     className="btn btn-sm btn-outline-light"
-                                                    onClick={() => setOpenIndex(index)}
+                                                    onClick={() => setOpenIndex(startIndex + index)}
                                                 >
                                                     <i className="bi bi-eye"></i>
                                                 </button>
