@@ -11,7 +11,7 @@
 Estamos creando un sistema que ayuda a empresas a entender el sentimiento de los comentarios de sus clientes (reseñas, feedback, redes sociales):
 
 - El sistema recibe textos por clientes
-- Los clasifica como **Positivo** / **Neutro** / **Negativo** con una probabilidad asociada
+- Los clasifica como **Positivo** / **Negativo** con una probabilidad asociada
 - Muestra resultados en un dashboard sencillo, entendible para personas no técnicas con un lenguaje humano
 
 ### Objetivo del Hackathon
@@ -45,18 +45,19 @@ Entregar un MVP funcional, bien organizado y con buenas prácticas de colaboraci
 
 ### Flujo Completo
 
-1. **Cliente** escribe una opinión en el dashboard mediante el endpoint POST
+1. **Cliente** escribe una opinión en el dashboard
 2. **Dashboard** envía la opinión a la API con un JSON: `{ "text": "..." }`
-3. **API** valida mediante una capa de ValidationChain:
+3. **API** valida mediante Bean Validation en DTOs:
    - Que exista el campo `text`
    - Que no esté vacío
-   - Cumple con longitud mínima y máxima (ejemplo: 10–200 caracteres)
-   - No contiene caracteres o formatos no soportados
-   - Que cumpla con el comentario escrito en idioma inglés
+   - Cumple con longitud mínima y máxima (ejemplo: 20–500 caracteres)
    - Si falla alguna regla → devuelve un mensaje de error claro a la app (código 400)
-4. Si el texto es válido, la **API** manda el texto al modelo de Data Science
-5. El **modelo de sentimiento** analiza el texto y devuelve:
-   - Una etiqueta (Positivo / Neutro / Negativo)
+4. Si el texto es válido, la **API** manda el texto al microservicio de Data Science
+5. El **modelo de sentimiento** analiza el texto:
+   - Traduce automáticamente si aplica
+   - Clasifica el sentimiento
+   - Devuelve:
+   - Una etiqueta (Positivo / Negativo)
    - Una probabilidad (0–1)
 6. La **API** recibe ese resultado y lo traduce a un JSON estable según el formato requerido por el cliente, por ejemplo:
    ```json
@@ -79,35 +80,38 @@ Cliente → Dashboard → API (validación) → Modelo DS → API (formatea) →
 
 #### Cliente
 - Escribe comentario/reseña en el dashboard
-- Envía el texto al dashboard vía POST `/sentiment`
+- Envía el texto a la API vía POST `/v1/sentiment`
 
 #### API REST (Back-End)
-**Capa de validación (ValidationChain):**
+**Validación de entrada (Bean Validation):**
 - Verifica estructura del JSON
-- Valida reglas de negocio (longitud, caracteres permitidos, idioma)
+- Valida reglas de negocio (longitud y campo requerido)
 
 **Capa de integración DS:**
-- Envía el texto al modelo de Data Science (por ahora se puede simular con un stub o un endpoint sencillo)
+- Envía el texto al microservicio de Data Science
 - Recibe los resultados del modelo (etiqueta y probabilidad)
 
 **Capa de respuesta API:**
 - Arma un JSON claro y estable para el dashboard
 - Maneja errores (por ejemplo, si DS no responde)
 
-#### Modelo de Data Science (Python / Colab)
+#### Modelo de Data Science (Python / Flask)
 - Entrenado con un dataset de comentarios de clientes en inglés
 - Pipeline típico (propuesta):
   - Limpieza de texto
+  - Traducción automática (si aplica)
   - Extracción de features (por ejemplo, TF-IDF)
   - Modelo supervisado (Logistic Regression, Naive Bayes u otro)
-- Expone una función de predicción (en notebook) o idealmente un endpoint que reciba texto y devuelva etiqueta de sentimiento y probabilidad
+- Expone endpoints HTTP que reciben texto y devuelven etiqueta de sentimiento y probabilidad
 - Se documentan métricas básicas: Accuracy, Precision, Recall, F1 score
 
-#### Dashboard básico
-- Consume la API para enviar textos o consultar resultados
+#### Dashboard (React + Vite)
+- Consume la API para enviar textos, consultar historial y batch
 - Muestra:
   - Sentimiento de un texto específico
-  - Estadísticas simples (porcentaje de positivos/negativos, ejemplos)
+  - Estadísticas y gráficos en tiempo real
+  - Historial con filtros y exportación CSV
+  - Resultados batch con paginación y detalle
 - **No ejecuta modelos; solo visualiza** lo que envía la API
 
 ### 4.2 Arquitectura en Capas (Backend)
@@ -115,7 +119,7 @@ Cliente → Dashboard → API (validación) → Modelo DS → API (formatea) →
 El backend implementa una arquitectura en capas alineada con buenas prácticas de Spring Boot:
 
 - **Controller**: Endpoints REST, recibe requests HTTP
-- **Validation**: Validaciones de lógica de negocio (ValidationChain)
+- **Validation**: Validaciones de lógica de negocio (Bean Validation)
 - **Service**: Lógica de negocio principal
 - **DTO**: Objetos de entrada/salida para la API
 - **Domain**: Entidades de negocio
@@ -128,21 +132,18 @@ El backend implementa una arquitectura en capas alineada con buenas prácticas d
 - Escalable ante crecimiento del proyecto
 - Compatible con buenas prácticas de Spring Boot
 
-### 4.3 Patrón Chain of Responsibility
+### 4.3 Validación con Bean Validation
 
-Se adopta el patrón Chain of Responsibility para manejar validaciones y pasos de procesamiento en backend.
+Se adopta Bean Validation para manejar las validaciones de entrada en los DTOs.
 
 **Motivos:**
-- Evitar flujos rígidos basados en if/else
-- Encapsular responsabilidades individuales
-- Facilitar extensión del flujo sin modificar lógica existente
-- Mejorar legibilidad y trazabilidad
+- Reducir código manual de validación
+- Declarar reglas cerca del modelo de entrada
+- Integración nativa con Spring Boot y mensajes claros de error
 
-**Ejemplos de responsabilidades en la cadena:**
-- Validación de texto vacío
-- Validación de longitud
-- Detección de idioma
-- Validaciones previas al análisis del modelo
+**Validaciones aplicadas:**
+- Campo requerido (`@NotBlank`)
+- Longitud mínima y máxima (`@Size`)
 
 ### 4.4 Backend como Fuente Única de Verdad
 
@@ -169,7 +170,6 @@ SentimentAPI/
 │   ├── src/
 │   │   ├── main/java/com/sentiment/backend/
 │   │   │   ├── controller/      # Endpoints REST
-│   │   │   ├── validation/      # Validaciones de lógica de negocio
 │   │   │   ├── service/         # Lógica de negocio
 │   │   │   ├── dto/             # Objetos de entrada/salida
 │   │   │   ├── domain/          # Entidades de negocio
@@ -179,12 +179,12 @@ SentimentAPI/
 │   │   └── test/java/           # Pruebas
 │   └── pom.xml                  # Dependencias Maven
 │
-├── datascience/                 # Modelos y datasets
-│   ├── notebooks/
-│   │   └── SentimentModel.ipynb # Colab, convertido a .ipynb
-│   └── datasets/
-│       ├── training_data.csv
-│       └── validation_data.csv
+├── datascience/                 # Microservicio DS
+│   └── python_service/
+│       ├── app.py               # API Flask (predict/predict_batch)
+│       ├── requirements.txt     # Dependencias Python
+│       ├── sentiment_model_v1.pkl
+│       └── tfidf_vectorizer_v1.pkl
 │
 ├── dashboard/                   # Frontend
 │   ├── src/
@@ -211,8 +211,8 @@ Para información detallada sobre decisiones arquitectónicas, alternativas cons
 - **Arquitectura en capas**: Separación clara de responsabilidades
 - **Backend como fuente única de verdad**: Toda la lógica de negocio en el backend
 - **Frontend pasivo**: El dashboard solo visualiza datos
-- **Chain of Responsibility**: Para validaciones y procesamiento
-- **Idioma del modelo**: Solo inglés (validado en backend)
+- **Bean Validation**: Para validaciones de entrada
+- **Idioma del modelo**: El DS traduce automáticamente a inglés
 - **Idioma del código**: Backend en inglés, mensajes API en español, documentación en español
 
 ---
@@ -233,15 +233,15 @@ Para información detallada sobre decisiones arquitectónicas, alternativas cons
 │  - Visualiza resultados                 │
 └────┬────────────────────────────────────┘
      │
-     │ POST /sentiment
+     │ POST /v1/sentiment
      ▼
 ┌─────────────────────────────────────────┐
 │      API REST (Spring Boot)             │
 │  ┌──────────────────────────────────┐   │
-│  │ ValidationChain                  │   │
+│  │ Bean Validation                  │   │
 │  │  - Validar estructura JSON       │   │
 │  │  - Validar longitud              │   │
-│  │  - Validar idioma (inglés)       │   │
+│  │  - Validar campo requerido       │   │
 │  └──────┬───────────────────────────┘   │
 │         │                               │
 │         │ Texto validado                │
@@ -278,7 +278,7 @@ Para información detallada sobre decisiones arquitectónicas, alternativas cons
 │          Dashboard (Visualiza)          │
 │  - Muestra sentimiento                  │
 │  - Muestra probabilidad                 │
-│  - Estadísticas simples                 │
+│  - Estadísticas y gráficos              │
 └─────────────────────────────────────────┘
 ```
 
@@ -289,9 +289,8 @@ Para información detallada sobre decisiones arquitectónicas, alternativas cons
 ### 8.1 Idioma y Validación
 
 - El modelo está entrenado exclusivamente con datasets en **inglés**
-- El backend valida que el texto esté en inglés antes de procesarlo
-- Textos en otros idiomas son rechazados con un mensaje explicativo (código 400)
-- Esta validación se realiza en el backend, no en el frontend
+- El microservicio de Data Science traduce automáticamente los textos
+- El backend no rechaza textos por idioma
 
 ### 8.2 Integración con Data Science
 
