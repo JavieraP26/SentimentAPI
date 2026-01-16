@@ -25,6 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CsvBatchService {
 
+    private static final int MIN_TEXT_LENGTH = 20;
+    private static final int MAX_TEXT_LENGTH = 500;
+
     private final SentimentService sentimentService;
 
     public int processCsv(MultipartFile file) {
@@ -51,7 +54,7 @@ public class CsvBatchService {
 
                 // Extraer primera columna como texto a analizar
                 String text = extractFirstColumn(raw);
-                if (text.isBlank()) {
+                if (!isValidText(text)) {
                     continue;
                 }
 
@@ -96,5 +99,13 @@ public class CsvBatchService {
             trimmed = trimmed.substring(1, trimmed.length() - 1).trim();
         }
         return trimmed;
+    }
+
+    private boolean isValidText(String text) {
+        if (text == null || text.isBlank()) {
+            return false;
+        }
+        int length = text.length();
+        return length >= MIN_TEXT_LENGTH && length <= MAX_TEXT_LENGTH;
     }
 }
