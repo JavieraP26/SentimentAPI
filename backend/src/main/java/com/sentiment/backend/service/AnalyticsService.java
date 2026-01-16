@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 
 import com.sentiment.backend.domain.Sentiment;
 import com.sentiment.backend.dto.AnalyticsResponseDTO;
-import com.sentiment.backend.dto.DateRangeAnalyticsResponseDTO;
 import com.sentiment.backend.dto.DashboardStatsDTO;
+import com.sentiment.backend.dto.DateRangeAnalyticsResponseDTO;
 import com.sentiment.backend.dto.SentimentRecordDTO;
 import com.sentiment.backend.repository.SentimentRepository;
 
@@ -64,8 +64,9 @@ public class AnalyticsService {
         long positivos = sentimentRepository.countByPrevision(POSITIVO);
         long negativos = sentimentRepository.countByPrevision(NEGATIVO);
 
-        String porcentajePositivos = formatPercentage(positivos, total);
-        String porcentajeNegativos = formatPercentage(negativos, total);
+        long totalClasificados = positivos + negativos;
+        String porcentajePositivos = formatPercentage(positivos, totalClasificados);
+        String porcentajeNegativos = formatPercentage(negativos, totalClasificados);
 
         Map<String, Integer> topWordsPos = new HashMap<>();
         Map<String, Integer> topWordsNeg = new HashMap<>();
@@ -77,15 +78,10 @@ public class AnalyticsService {
                 continue;
             }
 
-            Map<String, Integer> target =
-                    POSITIVO.equalsIgnoreCase(sentiment.getPrevision()) ? topWordsPos : topWordsNeg;
-
-            for (String raw : palabras.split(",")) {
-                String palabra = raw.trim();
-                if (palabra.isEmpty()) {
-                    continue;
-                }
-                target.put(palabra, target.getOrDefault(palabra, 0) + 1);
+            if (POSITIVO.equalsIgnoreCase(sentiment.getPrevision())) {
+                addWords(topWordsPos, palabras);
+            } else if (NEGATIVO.equalsIgnoreCase(sentiment.getPrevision())) {
+                addWords(topWordsNeg, palabras);
             }
         }
 
@@ -113,43 +109,39 @@ public class AnalyticsService {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Sentiment> pageResult;
-        List<Sentiment> records;
         long total;
+        List<Sentiment> recordsForStats;
 
         if (sentiment == null || sentiment.isBlank()) {
             pageResult = sentimentRepository.findByCreatedAtBetween(start, end, pageable);
-            records = sentimentRepository.findByCreatedAtBetween(start, end);
             total = sentimentRepository.countByCreatedAtBetween(start, end);
+            recordsForStats = sentimentRepository.findByCreatedAtBetween(start, end);
         } else {
             pageResult = sentimentRepository.findByRangeAndSentiment(start, end, sentiment, pageable);
-            records = sentimentRepository.findAllByRangeAndSentiment(start, end, sentiment);
             total = sentimentRepository.countByRangeAndSentiment(start, end, sentiment);
+            recordsForStats = sentimentRepository.findByCreatedAtBetween(start, end);
         }
-        long positivos = records.stream().filter(r -> POSITIVO.equalsIgnoreCase(r.getPrevision())).count();
-        long negativos = records.stream().filter(r -> NEGATIVO.equalsIgnoreCase(r.getPrevision())).count();
+        long positivos = recordsForStats.stream().filter(r -> POSITIVO.equalsIgnoreCase(r.getPrevision())).count();
+        long negativos = recordsForStats.stream().filter(r -> NEGATIVO.equalsIgnoreCase(r.getPrevision())).count();
 
-        String porcentajePositivos = formatPercentage(positivos, total);
-        String porcentajeNegativos = formatPercentage(negativos, total);
+        long totalClasificados = positivos + negativos;
+        String porcentajePositivos = formatPercentage(positivos, totalClasificados);
+        String porcentajeNegativos = formatPercentage(negativos, totalClasificados);
 
         Map<String, Integer> topWordsPos = new HashMap<>();
         Map<String, Integer> topWordsNeg = new HashMap<>();
 
         // Acumula palabras clave solo dentro del rango consultado
-        for (Sentiment record : records) {
+        for (Sentiment record : recordsForStats) {
             String palabras = record.getPalabrasClave();
             if (palabras == null || palabras.isBlank()) {
                 continue;
             }
 
-            Map<String, Integer> target =
-                    POSITIVO.equalsIgnoreCase(record.getPrevision()) ? topWordsPos : topWordsNeg;
-
-            for (String raw : palabras.split(",")) {
-                String palabra = raw.trim();
-                if (palabra.isEmpty()) {
-                    continue;
-                }
-                target.put(palabra, target.getOrDefault(palabra, 0) + 1);
+            if (POSITIVO.equalsIgnoreCase(record.getPrevision())) {
+                addWords(topWordsPos, palabras);
+            } else if (NEGATIVO.equalsIgnoreCase(record.getPrevision())) {
+                addWords(topWordsNeg, palabras);
             }
         }
 
@@ -238,6 +230,16 @@ public class AnalyticsService {
                 sentiment.getProbabilidad(),
                 palabras
         );
+    }
+
+    private void addWords(Map<String, Integer> target, String palabras) {
+        for (String raw : palabras.split(",")) {
+            String palabra = raw.trim();
+            if (palabra.isEmpty()) {
+                continue;
+            }
+            target.put(palabra, target.getOrDefault(palabra, 0) + 1);
+        }
     }
 
     private String escapeCsv(String value) {
