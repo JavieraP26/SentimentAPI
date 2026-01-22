@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
  *
  * Validaciones aplicadas:
  * - El texto no puede estar vacío
- * - Debe tener entre 20 y 500 caracteres
+ * - Debe tener entre 10 y 500 caracteres
  *
  * Ejemplo de uso:
  * {
@@ -43,6 +43,6 @@ public class SentimentRequestDTO {
      */
 
     @NotBlank(message = "El campo 'text' no puede estar vacío.")
-    @Size(min = 20, max = 500, message = "El campo 'text' texto debe tener entre 20 y 500 caracteres")
+    @Size(min = 10, max = 500, message = "El campo 'text' texto debe tener entre 10 y 500 caracteres")
     private String text;
 }

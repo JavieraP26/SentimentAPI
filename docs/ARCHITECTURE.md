@@ -50,7 +50,7 @@ Entregar un MVP funcional, bien organizado y con buenas prácticas de colaboraci
 3. **API** valida mediante Bean Validation en DTOs:
    - Que exista el campo `text`
    - Que no esté vacío
-   - Cumple con longitud mínima y máxima (ejemplo: 20–500 caracteres)
+  - Cumple con longitud mínima y máxima (ejemplo: 10–500 caracteres)
    - Si falla alguna regla → devuelve un mensaje de error claro a la app (código 400)
 4. Si el texto es válido, la **API** manda el texto al microservicio de Data Science
 5. El **modelo de sentimiento** analiza el texto:

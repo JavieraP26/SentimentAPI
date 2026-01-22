@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { BatchResultItem } from '../types';
+import { normalizeCsvText } from '../utils/csv';
 import { DetailModal } from './DetailModal';
 
 type BatchResultsPanelProps = {
@@ -42,8 +43,8 @@ export function BatchResultsPanel({ results, page, pageSize, onPageChange }: Bat
                                     const modalId = `batchDetailModal-${page}-${index}`;
                                     return (
                                         <tr key={modalId}>
-                                            <td>{item.textoOriginal}</td>
-                                            <td>{item.textoTraducido || '-'}</td>
+                                            <td>{normalizeCsvText(item.textoOriginal)}</td>
+                                            <td>{item.textoTraducido ? normalizeCsvText(item.textoTraducido) : '-'}</td>
                                             <td>{item.prevision}</td>
                                             <td>{(item.probabilidad * 100).toFixed(2)}%</td>
                                             <td>{item.palabrasClave?.join(', ') || '-'}</td>
@@ -96,8 +97,8 @@ export function BatchResultsPanel({ results, page, pageSize, onPageChange }: Bat
             >
                 {openIndex !== null && results[openIndex] && (
                     <>
-                        <p><strong>Texto original:</strong> {results[openIndex].textoOriginal}</p>
-                        <p><strong>Texto interpretado:</strong> {results[openIndex].textoTraducido || '-'}</p>
+                        <p><strong>Texto original:</strong> {normalizeCsvText(results[openIndex].textoOriginal)}</p>
+                        <p><strong>Texto interpretado:</strong> {results[openIndex].textoTraducido ? normalizeCsvText(results[openIndex].textoTraducido) : '-'}</p>
                         <p><strong>Previsión:</strong> {results[openIndex].prevision}</p>
                         <p><strong>Probabilidad:</strong> {(results[openIndex].probabilidad * 100).toFixed(2)}%</p>
                         <p><strong>Palabras clave:</strong> {results[openIndex].palabrasClave?.join(', ') || '-'}</p>

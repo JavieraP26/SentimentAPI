@@ -44,35 +44,35 @@ public interface SentimentRepository extends JpaRepository<Sentiment, Long> {
     @Query("""
             select s from Sentiment s
             where s.createdAt between :start and :end
-              and (:sentiment is null or lower(s.prevision) = lower(:sentiment))
+              and s.prevision in :sentiments
             order by s.createdAt desc
             """)
     Page<Sentiment> findByRangeAndSentiment(
             LocalDateTime start,
             LocalDateTime end,
-            String sentiment,
+            List<String> sentiments,
             Pageable pageable);
 
     // Obtiene registros por rango y sentimiento (sin paginar, para resumen/export)
     @Query("""
             select s from Sentiment s
             where s.createdAt between :start and :end
-              and (:sentiment is null or lower(s.prevision) = lower(:sentiment))
+              and s.prevision in :sentiments
             order by s.createdAt desc
             """)
     List<Sentiment> findAllByRangeAndSentiment(
             LocalDateTime start,
             LocalDateTime end,
-            String sentiment);
+            List<String> sentiments);
 
     // Conteo por rango y sentimiento
     @Query("""
             select count(s) from Sentiment s
             where s.createdAt between :start and :end
-              and (:sentiment is null or lower(s.prevision) = lower(:sentiment))
+              and s.prevision in :sentiments
             """)
     long countByRangeAndSentiment(
             LocalDateTime start,
             LocalDateTime end,
-            String sentiment);
+            List<String> sentiments);
 }

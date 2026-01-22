@@ -30,7 +30,7 @@ export function SentimentCard({ texto, resultado, onSubmit, onTextChange }: Sent
                     <div className="alert alert-dark-custom mb-4">
                         <ul className="mb-0 small text-muted-light ps-3">
                             <li>Introduce tu feedback en el idioma que gustes, el sistema lo detectará automáticamente.</li>
-                            <li>La longitud del texto debe ser preferiblemente entre 20 a 500 caracteres.</li>
+                            <li>La longitud del texto debe ser preferiblemente entre 10 a 500 caracteres.</li>
                             <li>Es recomendable no utilizar caracteres especiales.</li>
                         </ul>
                     </div>
