@@ -12,7 +12,19 @@ export function useBatch(onSuccess?: () => Promise<void> | void) {
     const [mensajeTipo, setMensajeTipo] = useState<AlertType | null>(null);
     const [batchResults, setBatchResults] = useState<BatchResultItem[]>([]);
     const [batchPage, setBatchPage] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
     const pageSize = 15;
+
+    const readCsvContent = async (file: File): Promise<string> => {
+        const buffer = await file.arrayBuffer();
+        try {
+            const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+            return utf8Decoder.decode(buffer);
+        } catch {
+            const latinDecoder = new TextDecoder('windows-1252', { fatal: false });
+            return latinDecoder.decode(buffer);
+        }
+    };
 
     const handleCsvSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -27,9 +39,10 @@ export function useBatch(onSuccess?: () => Promise<void> | void) {
         }
 
         try {
-            const content = await file.text();
+            setIsLoading(true);
+            const content = await readCsvContent(file);
             const texts = extractTextsFromCsv(content).filter(
-                (text) => text.length >= 20 && text.length <= 500
+                (text) => text.length >= 10 && text.length <= 500
             );
 
             if (texts.length === 0) {
@@ -58,6 +71,8 @@ export function useBatch(onSuccess?: () => Promise<void> | void) {
         } catch (error) {
             setMensaje('Hubo un error procesando el archivo.');
             setMensajeTipo('danger');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -66,6 +81,7 @@ export function useBatch(onSuccess?: () => Promise<void> | void) {
         mensaje,
         mensajeTipo,
         handleCsvSubmit,
+        isLoading,
         batchResults,
         batchPage,
         pageSize,

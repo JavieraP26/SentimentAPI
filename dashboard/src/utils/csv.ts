@@ -25,16 +25,55 @@ export function extractTextsFromCsv(content: string): string[] {
 
 function looksLikeHeader(line: string): boolean {
     const lower = line.toLowerCase();
-    return lower.includes('text') || lower.includes('feedback') || lower.includes('coment');
+    return (
+        lower.includes('text') ||
+        lower.includes('texto') ||
+        lower.includes('feedback') ||
+        lower.includes('comentario') ||
+        lower.includes('comentarios') ||
+        lower.includes('opinion') ||
+        lower.includes('opiniones') ||
+        lower.includes('mensaje') ||
+        lower.includes('mensajes')
+    );
 }
 
 function extractFirstColumn(line: string): string {
-    const commaIndex = line.indexOf(',');
-    let first = commaIndex >= 0 ? line.substring(0, commaIndex) : line;
+    const firstField = parseFirstCsvField(line);
+    return normalizeCsvText(firstField);
+}
 
-    let trimmed = first.trim();
-    if (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length >= 2) {
-        trimmed = trimmed.substring(1, trimmed.length - 1).trim();
+export function normalizeCsvText(value: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) return trimmed;
+    const unescaped = trimmed.replace(/""/g, '"');
+    if (unescaped.startsWith('"') && unescaped.endsWith('"') && unescaped.length >= 2) {
+        return unescaped.substring(1, unescaped.length - 1).trim();
     }
-    return trimmed;
+    return unescaped.trim();
+}
+
+function parseFirstCsvField(line: string): string {
+    let inQuotes = false;
+    let result = '';
+
+    for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+        if (char === '"') {
+            const next = line[i + 1];
+            if (inQuotes && next === '"') {
+                result += '"';
+                i += 1;
+                continue;
+            }
+            inQuotes = !inQuotes;
+            continue;
+        }
+        if (!inQuotes && char === ',') {
+            break;
+        }
+        result += char;
+    }
+
+    return result.trim();
 }

@@ -1,6 +1,5 @@
 package com.sentiment.backend.service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -107,19 +106,20 @@ public class AnalyticsService {
         LocalDateTime start = desde.atStartOfDay();
         LocalDateTime end = hasta.atTime(LocalTime.MAX);
 
+        List<String> normalizedSentiment = normalizeSentimentVariants(sentiment);
         Pageable pageable = PageRequest.of(page, size);
         Page<Sentiment> pageResult;
         long total;
         List<Sentiment> recordsForStats;
 
-        if (sentiment == null || sentiment.isBlank()) {
+        if (normalizedSentiment == null) {
             pageResult = sentimentRepository.findByCreatedAtBetween(start, end, pageable);
             total = sentimentRepository.countByCreatedAtBetween(start, end);
             recordsForStats = sentimentRepository.findByCreatedAtBetween(start, end);
         } else {
-            pageResult = sentimentRepository.findByRangeAndSentiment(start, end, sentiment, pageable);
-            total = sentimentRepository.countByRangeAndSentiment(start, end, sentiment);
-            recordsForStats = sentimentRepository.findAllByRangeAndSentiment(start, end, sentiment);
+            pageResult = sentimentRepository.findByRangeAndSentiment(start, end, normalizedSentiment, pageable);
+            total = sentimentRepository.countByRangeAndSentiment(start, end, normalizedSentiment);
+            recordsForStats = sentimentRepository.findAllByRangeAndSentiment(start, end, normalizedSentiment);
         }
         long positivos = recordsForStats.stream().filter(r -> POSITIVO.equalsIgnoreCase(r.getPrevision())).count();
         long negativos = recordsForStats.stream().filter(r -> NEGATIVO.equalsIgnoreCase(r.getPrevision())).count();
@@ -170,10 +170,12 @@ public class AnalyticsService {
         LocalDateTime start = desde.atStartOfDay();
         LocalDateTime end = hasta.atTime(LocalTime.MAX);
 
-        List<Sentiment> records = sentimentRepository.findAllByRangeAndSentiment(start, end, sentiment);
+        List<String> normalizedSentiment = normalizeSentimentVariants(sentiment);
+        List<Sentiment> records = normalizedSentiment == null
+                ? sentimentRepository.findByCreatedAtBetween(start, end)
+                : sentimentRepository.findAllByRangeAndSentiment(start, end, normalizedSentiment);
 
         StringBuilder csv = new StringBuilder();
-        csv.append("\uFEFF");
         csv.append("sep=;\n");
         csv.append("Fecha;Texto Original;Texto Interpretado;Prevision;Probabilidad;Palabras clave\n");
 
@@ -187,7 +189,7 @@ public class AnalyticsService {
                .append('\n');
         }
 
-        return csv.toString().getBytes(StandardCharsets.UTF_8);
+        return csv.toString().getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
     }
 
     private String formatPercentage(long part, long total) {
@@ -249,4 +251,26 @@ public class AnalyticsService {
         String escaped = value.replace("\"", "\"\"");
         return "\"" + escaped + "\"";
     }
+
+    private List<String> normalizeSentimentVariants(String sentiment) {
+        if (sentiment == null || sentiment.isBlank()) {
+            return null;
+        }
+        if (POSITIVO.equalsIgnoreCase(sentiment)) {
+            return List.of(
+                    POSITIVO,
+                    POSITIVO.toUpperCase(Locale.ROOT),
+                    POSITIVO.toLowerCase(Locale.ROOT)
+            );
+        }
+        if (NEGATIVO.equalsIgnoreCase(sentiment)) {
+            return List.of(
+                    NEGATIVO,
+                    NEGATIVO.toUpperCase(Locale.ROOT),
+                    NEGATIVO.toLowerCase(Locale.ROOT)
+            );
+        }
+        return null;
+    }
+
 }

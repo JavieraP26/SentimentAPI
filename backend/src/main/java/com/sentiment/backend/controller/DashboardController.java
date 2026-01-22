@@ -43,7 +43,7 @@ public class DashboardController {
     public String analizar(
             @RequestParam("texto")
             @NotBlank(message = "El campo 'text' no puede estar vacío.")
-            @Size(min = 20, max = 500, message = "El campo 'text' debe tener entre 20 y 500 caracteres")
+            @Size(min = 10, max = 500, message = "El campo 'text' debe tener entre 10 y 500 caracteres")
             String texto,
             Model model) {
         // Envía el texto al servicio y obtiene la respuesta formateada

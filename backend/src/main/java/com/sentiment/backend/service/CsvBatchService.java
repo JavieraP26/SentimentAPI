@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CsvBatchService {
 
-    private static final int MIN_TEXT_LENGTH = 20;
+    private static final int MIN_TEXT_LENGTH = 10;
     private static final int MAX_TEXT_LENGTH = 500;
 
     private final SentimentService sentimentService;
@@ -83,22 +83,20 @@ public class CsvBatchService {
 
     private boolean looksLikeHeader(String line) {
         String lower = line.toLowerCase();
-        return lower.contains("text") || lower.contains("feedback") || lower.contains("coment");
+        return lower.contains("text")
+                || lower.contains("texto")
+                || lower.contains("feedback")
+                || lower.contains("comentario")
+                || lower.contains("comentarios")
+                || lower.contains("opinion")
+                || lower.contains("opiniones")
+                || lower.contains("mensaje")
+                || lower.contains("mensajes");
     }
 
     private String extractFirstColumn(String line) {
-        // Extraemos la primera columna, soportando CSV simple con comas
-        String first = line;
-        int commaIndex = line.indexOf(',');
-        if (commaIndex >= 0) {
-            first = line.substring(0, commaIndex);
-        }
-
-        String trimmed = first.trim();
-        if (trimmed.startsWith("\"") && trimmed.endsWith("\"") && trimmed.length() >= 2) {
-            trimmed = trimmed.substring(1, trimmed.length() - 1).trim();
-        }
-        return trimmed;
+        String firstField = parseFirstCsvField(line);
+        return normalizeCsvText(firstField);
     }
 
     private boolean isValidText(String text) {
@@ -107,5 +105,44 @@ public class CsvBatchService {
         }
         int length = text.length();
         return length >= MIN_TEXT_LENGTH && length <= MAX_TEXT_LENGTH;
+    }
+
+    private String parseFirstCsvField(String line) {
+        StringBuilder result = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char current = line.charAt(i);
+            if (current == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    result.append('"');
+                    i++;
+                    continue;
+                }
+                inQuotes = !inQuotes;
+                continue;
+            }
+            if (!inQuotes && current == ',') {
+                break;
+            }
+            result.append(current);
+        }
+
+        return result.toString().trim();
+    }
+
+    private String normalizeCsvText(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+        String unescaped = trimmed.replace("\"\"", "\"");
+        if (unescaped.startsWith("\"") && unescaped.endsWith("\"") && unescaped.length() >= 2) {
+            return unescaped.substring(1, unescaped.length() - 1).trim();
+        }
+        return unescaped.trim();
     }
 }

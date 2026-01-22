@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { DateRangeAnalyticsResponse } from '../types';
+import { normalizeCsvText } from '../utils/csv';
 import { DetailModal } from './DetailModal';
 
 type RangePanelProps = {
@@ -132,8 +133,8 @@ export function RangePanel({
                                         {rangeData.registros.map((registro, index) => (
                                             <tr key={`${registro.fecha}-${index}`}>
                                                 <td>{registro.fecha}</td>
-                                                <td>{registro.textoOriginal}</td>
-                                                <td>{registro.textoInterpretado || '-'}</td>
+                                                <td>{normalizeCsvText(registro.textoOriginal)}</td>
+                                                <td>{registro.textoInterpretado ? normalizeCsvText(registro.textoInterpretado) : '-'}</td>
                                                 <td>{registro.prevision}</td>
                                                 <td>{(registro.probabilidad * 100).toFixed(2)}%</td>
                                                 <td>{registro.palabrasClave?.join(', ') || '-'}</td>
@@ -219,8 +220,8 @@ export function RangePanel({
                         {openIndex !== null && rangeData?.registros[openIndex] && (
                             <>
                                 <p><strong>Fecha:</strong> {rangeData.registros[openIndex].fecha}</p>
-                                <p><strong>Texto original:</strong> {rangeData.registros[openIndex].textoOriginal}</p>
-                                <p><strong>Texto interpretado:</strong> {rangeData.registros[openIndex].textoInterpretado || '-'}</p>
+                                <p><strong>Texto original:</strong> {normalizeCsvText(rangeData.registros[openIndex].textoOriginal)}</p>
+                                <p><strong>Texto interpretado:</strong> {rangeData.registros[openIndex].textoInterpretado ? normalizeCsvText(rangeData.registros[openIndex].textoInterpretado) : '-'}</p>
                                 <p><strong>Previsión:</strong> {rangeData.registros[openIndex].prevision}</p>
                                 <p><strong>Probabilidad:</strong> {(rangeData.registros[openIndex].probabilidad * 100).toFixed(2)}%</p>
                                 <p><strong>Palabras clave:</strong> {rangeData.registros[openIndex].palabrasClave?.join(', ') || '-'}</p>
