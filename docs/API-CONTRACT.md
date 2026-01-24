@@ -13,6 +13,7 @@ Esta documentación describe el contrato de la API REST para el análisis de sen
 **Base URL:**
 - Desarrollo: `http://localhost:8080/v1`
 - Producción: (Pendiente de despliegue)
+
 **Formato:** JSON  
 **Idioma de entrada:** Multilenguaje  
 **Idioma de análisis en DS:** Inglés (requerido)
@@ -214,6 +215,7 @@ Exporta el historial filtrado en formato CSV.
 **Método:** `GET`  
 **Ruta:** `/v1/analytics/range/export`  
 **Query Params:** mismos que `/v1/analytics/range` (sin paginación)
+
 ---
 
 ## 3. Reglas de Validación
