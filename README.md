@@ -245,45 +245,61 @@ Para ejemplos completos, validaciones, códigos de error y más detalles, consul
 
 ---
 
+## 🤖 Explicación del modelo
+
+Luego de que la API valide el comentario, este pasa por el microservicio DS donde:
+1. **El texto es limpiado y procesado:** hay que normalizar los caracteres especiales (signos, puntuaciones, etc. no son relevantes).
+2. **Se traduce al idioma ingles:** Se globaliza el idioma para mayor facilidad de análisis.
+3. **Se aplica vectorización TF-IDF:** El modelo solo entiende números; este proceso convierte el texto en una matriz.
+4. **El modelo clasifica:** Entrenado con un dataset de calidad en inglés y con ayuda de los pasos anteriores, el modelo entiende datos de forma secuencial a su vez que comprende expresiones, metáforas, etc. para clasificar binariamente y un nivel de confianza en porcentaje (que tan seguro está).
+5. **Envia resultados:** Una vez que sabe la categoría del comentario y la probabilidad asociada, este envía estos datos a la API para presentar al dasboard. Adicionalmente, envia el texto traducido al inglés y las palabras clave que el modelo detecte (en inglés también).
+
+Para más detalles sobre las decisiones de la arquitectura del modelado, consulta [RFC-002.md](docs/RFC-002.md).
+
+Para más detalles sobre la historia del comentario en el flujo funcional, consulta [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ```
 SentimentAPI/
-├── README.md                    # Este archivo
+├── README.md                       # Este archivo
 │
-├── backend/                     # API REST (Spring Boot)
+├── backend/                        # API REST (Spring Boot)
 │   ├── src/
 │   │   ├── main/java/com/sentiment/backend/
-│   │   │   ├── controller/      # Endpoints REST
-│   │   │   ├── service/         # Lógica de negocio
-│   │   │   ├── dto/             # Objetos de entrada/salida
-│   │   │   ├── domain/          # Entidades de negocio
-│   │   │   ├── config/          # Configuraciones
-│   │   │   ├── mapper/          # Mappers entre capas
-│   │   │   └── exception/       # Manejo de errores
+│   │   │   ├── controller/         # Endpoints REST
+│   │   │   ├── service/            # Lógica de negocio
+│   │   │   ├── dto/                # Objetos de entrada/salida
+│   │   │   ├── domain/             # Entidades de negocio
+│   │   │   ├── config/             # Configuraciones
+│   │   │   ├── mapper/             # Mappers entre capas
+│   │   │   └── exception/          # Manejo de errores
 │   │   └── resources/
 │   │       └── application.yml
 │   └── pom.xml
 │
-├── datascience/                 # Microservicio DS
+├── datascience/                    # Microservicio DS
 │   └── python_service/
-│       ├── app.py               # API Flask (predict/predict_batch)
-│       ├── requirements.txt     # Dependencias Python
-│       ├── sentiment_model_v1.pkl
-│       └── tfidf_vectorizer_v1.pkl
+│       ├── app.py                  # API Flask (predict/predict_batch)
+│       ├── requirements.txt        # Dependencias Python
+│       ├── sentiment_model_v1.pkl  # Modelo entrenado serializado
+│       └── tfidf_vectorizer_v1.pkl # Vectorizador serializado
 │
-├── dashboard/                   # Frontend (Opcional)
+├── dashboard/                      # Frontend (UI)
 │   ├── src/
 │   │   ├── pages/
 │   │   ├── components/
 │   │   └── services/
 │   └── package.json
 │
-└── docs/                        # Documentación
-    ├── ARCHITECTURE.md          # Arquitectura del sistema
-    ├── API-CONTRACT.md          # Contrato de la API
-    ├── GITHUB_WORKFLOW.md       # Flujo de trabajo
-    └── RFC-001                  # Decisiones arquitectónicas
+└── docs/                           # Documentación
+    ├── ARCHITECTURE.md             # Arquitectura del sistema
+    ├── API-CONTRACT.md             # Contrato de la API
+    ├── GITHUB_WORKFLOW.md          # Flujo de trabajo
+    ├── RFC-001.md                  # Decisiones arquitectónicas
+    └── RFC-002.md                  # Decisiones de Data Science
 ```
 
 ---
@@ -294,6 +310,7 @@ SentimentAPI/
 - **[API-CONTRACT.md](docs/API-CONTRACT.md)**: Contrato completo de la API, endpoints, validaciones y ejemplos
 - **[GITHUB_WORKFLOW.md](docs/GITHUB_WORKFLOW.md)**: Flujo de trabajo, ramas, commits y Pull Requests
 - **[RFC-001](docs/RFC-001.md)**: Decisiones arquitectónicas y justificaciones
+- **[RFC-002](docs/RFC-002.md)**: Decisiones del modelado y el equipo de Data Science
 
 ---
 
@@ -304,13 +321,12 @@ SentimentAPI/
 
 | Integrante | Rol |
 |------------|-----|
-| Mauricio | Líder general + Data Science |
-| Yazmani | Data Science |
-| Leandro Diaz | Data Science |
-| Domingo Galaz | Data Science |
-| Manuela Mejia | Back-End |
-| Javiera | Back-End + Dashboard |
-| Fernanda | Back-End |
+| Mauricio Flores | Líder general + Data Science |
+| Yazmani Reyes | Data Science |
+| Leandro Díaz | Data Science |
+| Domingo Gálaz | Data Science |
+| Javiera Pulgar | Back-End + Dashboard |
+| Fernanda Fonseca | Back-End |
 
 ---
 
