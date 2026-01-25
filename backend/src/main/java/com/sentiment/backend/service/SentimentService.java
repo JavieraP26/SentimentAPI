@@ -54,7 +54,7 @@ public class SentimentService {
      * 5. Persistir en BD para historial y analytics
      * 6. Retornar respuesta formateada al cliente
      *
-     * @param request DTO con el texto validado (20-500 caracteres, no vacío)
+     * @param request DTO con el texto validado (10-500 caracteres, no vacío)
      * @return DTO con predicción en español, probabilidad, traducción y palabras clave
      * @throws IllegalStateException si DS retorna respuesta incompleta o inválida
      */
@@ -75,7 +75,7 @@ public class SentimentService {
     /**
      * Analiza un lote de textos usando el mismo flujo del análisis individual.
      *
-     * @param texts Lista de textos ya validados (20-500 caracteres, no vacíos)
+     * @param texts Lista de textos ya validados (10-500 caracteres, no vacíos)
      * @return Respuesta con total y resultados por texto
      */
     @Transactional

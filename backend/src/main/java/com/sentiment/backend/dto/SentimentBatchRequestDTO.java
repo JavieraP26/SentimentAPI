@@ -27,6 +27,6 @@ public class SentimentBatchRequestDTO {
     @Valid
     private List<
             @NotBlank(message = "Cada elemento de 'texts' es obligatorio.")
-            @Size(min = 20, max = 500, message = "Cada texto debe tener entre 20 y 500 caracteres")
+            @Size(min = 10, max = 500, message = "Cada texto debe tener entre 10 y 500 caracteres")
             String> texts;
 }

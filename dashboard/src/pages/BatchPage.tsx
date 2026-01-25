@@ -10,6 +10,7 @@ export function BatchPage() {
         mensaje,
         mensajeTipo,
         handleCsvSubmit,
+        isLoading,
         batchResults,
         batchPage,
         pageSize,
@@ -18,7 +19,7 @@ export function BatchPage() {
 
     return (
         <div className="row g-4">
-            <BatchCard onSubmit={handleCsvSubmit} fileInputRef={csvInputRef} />
+            <BatchCard onSubmit={handleCsvSubmit} fileInputRef={csvInputRef} isLoading={isLoading} />
             <AlertMessage message={mensaje} type={mensajeTipo ?? 'info'} />
             <BatchResultsPanel
                 results={batchResults}

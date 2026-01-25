@@ -13,6 +13,7 @@ Esta documentación describe el contrato de la API REST para el análisis de sen
 **Base URL:**
 - Desarrollo: `http://localhost:8080/v1`
 - Producción: (Pendiente de despliegue)
+
 **Formato:** JSON  
 **Idioma de entrada:** Multilenguaje  
 **Idioma de análisis en DS:** Inglés (requerido)
@@ -214,6 +215,7 @@ Exporta el historial filtrado en formato CSV.
 **Método:** `GET`  
 **Ruta:** `/v1/analytics/range/export`  
 **Query Params:** mismos que `/v1/analytics/range` (sin paginación)
+
 ---
 
 ## 3. Reglas de Validación
@@ -224,7 +226,7 @@ El campo `text` debe cumplir con las siguientes reglas:
 
 1. **Campo obligatorio**: El campo `text` es requerido y no puede estar ausente
 2. **No vacío**: El campo `text` no puede ser una cadena vacía (`""`)
-3. **Longitud mínima**: El texto debe tener al menos 20 caracteres
+3. **Longitud mínima**: El texto debe tener al menos 10 caracteres
 4. **Longitud máxima**: El texto debe tener como máximo 500 caracteres (configurable)
 5. **Caracteres permitidos**: El sistema puede restringir caracteres no válidos según acuerdos del equipo
 
@@ -347,7 +349,7 @@ Todos los errores siguen el siguiente formato estandarizado:
   "message": "Error de validación en los datos de entrada",
   "path": "/v1/sentiment",
   "details": {
-    "text": "El campo 'text' debe tener al menos 20 caracteres"
+    "text": "El campo 'text' debe tener al menos 10 caracteres"
   }
 }
 ```
@@ -467,7 +469,7 @@ curl -X POST http://localhost:8080/v1/sentiment \
   "message": "Error de validación en los datos de entrada",
   "path": "/v1/sentiment",
   "details": {
-    "text": "El campo 'text' debe tener al menos 20 caracteres"
+    "text": "El campo 'text' debe tener al menos 10 caracteres"
   }
 }
 ```
