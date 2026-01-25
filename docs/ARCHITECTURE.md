@@ -29,13 +29,12 @@ Entregar un MVP funcional, bien organizado y con buenas prácticas de colaboraci
 
 | Integrante | Rol                          |
 |------------|------------------------------|
-| Mauricio | Líder general + Data Science |
-| Yazmani | Data Science                 |
-| Leandro Diaz | Data Science                 |
-| Domingo Galaz | Data Science                 |
-| Manuela Mejia | Back-End                     |
-| Javiera | Back-End + Front-End         |
-| Fernanda | Back-End                     |
+| Mauricio Flores | Líder general + Data Science |
+| Yazmani Reyes | Data Science                 |
+| Leandro Díaz | Data Science                 |
+| Domingo Gálaz | Data Science                 |
+| Javiera Pulgar | Back-End + Front-End         |
+| Fernanda Fonseca | Back-End                     |
 
 **Principio:** Cada persona se especializa en su área, pero todos entienden el flujo completo.
 
@@ -54,11 +53,15 @@ Entregar un MVP funcional, bien organizado y con buenas prácticas de colaboraci
    - Si falla alguna regla → devuelve un mensaje de error claro a la app (código 400)
 4. Si el texto es válido, la **API** manda el texto al microservicio de Data Science
 5. El **modelo de sentimiento** analiza el texto:
-   - Traduce automáticamente si aplica
+   - Lo normaliza
+   - Traduce automáticamente
+   - Se vectoriza
    - Clasifica el sentimiento
    - Devuelve:
-   - Una etiqueta (Positivo / Negativo)
-   - Una probabilidad (0–1)
+        - Una etiqueta (Positivo / Negativo)
+        - Una probabilidad (0–1)
+        - El texto traducido (si aplica)
+        - Palabras clave (si aplica)
 6. La **API** recibe ese resultado y lo traduce a un JSON estable según el formato requerido por el cliente, por ejemplo:
    ```json
    { "prevision": "Negativo", "probabilidad": 0.92 }
@@ -97,11 +100,11 @@ Cliente → Dashboard → API (validación) → Modelo DS → API (formatea) →
 
 #### Modelo de Data Science (Python / Flask)
 - Entrenado con un dataset de comentarios de clientes en inglés
-- Pipeline típico (propuesta):
+- Pipeline típico:
   - Limpieza de texto
-  - Traducción automática (si aplica)
-  - Extracción de features (por ejemplo, TF-IDF)
-  - Modelo supervisado (Logistic Regression, Naive Bayes u otro)
+  - Traducción automática
+  - Extracción de features (vectorización TF-IDF)
+  - Modelo supervisado (Logistic Regression)
 - Expone endpoints HTTP que reciben texto y devuelven etiqueta de sentimiento y probabilidad
 - Se documentan métricas básicas: Accuracy, Precision, Recall, F1 score
 
@@ -164,40 +167,42 @@ Un único repositorio (monorepo) organizado así:
 
 ```
 SentimentAPI/
-├── README.md                    # Documentación raíz
+├── README.md                       # Este archivo
 │
-├── backend/                     # API Spring Boot
+├── backend/                        # API REST (Spring Boot)
 │   ├── src/
 │   │   ├── main/java/com/sentiment/backend/
-│   │   │   ├── controller/      # Endpoints REST
-│   │   │   ├── service/         # Lógica de negocio
-│   │   │   ├── dto/             # Objetos de entrada/salida
-│   │   │   ├── domain/          # Entidades de negocio
-│   │   │   ├── config/          # Configuraciones
-│   │   │   ├── mapper/          # Mappers entre capas
-│   │   │   └── exception/       # Manejo de errores
-│   │   └── test/java/           # Pruebas
-│   └── pom.xml                  # Dependencias Maven
+│   │   │   ├── controller/         # Endpoints REST
+│   │   │   ├── service/            # Lógica de negocio
+│   │   │   ├── dto/                # Objetos de entrada/salida
+│   │   │   ├── domain/             # Entidades de negocio
+│   │   │   ├── config/             # Configuraciones
+│   │   │   ├── mapper/             # Mappers entre capas
+│   │   │   └── exception/          # Manejo de errores
+│   │   └── resources/
+│   │       └── application.yml
+│   └── pom.xml
 │
-├── datascience/                 # Microservicio DS
+├── datascience/                    # Microservicio DS
 │   └── python_service/
-│       ├── app.py               # API Flask (predict/predict_batch)
-│       ├── requirements.txt     # Dependencias Python
-│       ├── sentiment_model_v1.pkl
-│       └── tfidf_vectorizer_v1.pkl
+│       ├── app.py                  # API Flask (predict/predict_batch)
+│       ├── requirements.txt        # Dependencias Python
+│       ├── sentiment_model_v1.pkl  # Modelo entrenado serializado
+│       └── tfidf_vectorizer_v1.pkl # Vectorizador serializado
 │
-├── dashboard/                   # Frontend
+├── dashboard/                      # Frontend (UI)
 │   ├── src/
 │   │   ├── pages/
 │   │   ├── components/
 │   │   └── services/
 │   └── package.json
 │
-└── docs/                        # Documentación
-    ├── ARCHITECTURE.md          # Este archivo
-    ├── API-CONTRACT.md          # Contrato de la API
-    ├── GITHUB_WORKFLOW.md       # Flujo de trabajo en GitHub
-    └── RFC-001                  # Decisiones arquitectónicas (RFC)
+└── docs/                           # Documentación
+    ├── ARCHITECTURE.md             # Arquitectura del sistema
+    ├── API-CONTRACT.md             # Contrato de la API
+    ├── GITHUB_WORKFLOW.md          # Flujo de trabajo
+    ├── RFC-001.md                  # Decisiones arquitectónicas
+    └── RFC-002.md                  # Decisiones de Data Science
 ```
 
 ---
@@ -256,7 +261,7 @@ Para información detallada sobre decisiones arquitectónicas, alternativas cons
           │ POST texto
           ▼
 ┌─────────────────────────────────────────┐
-│  Modelo Data Science (Python/Colab)     │
+│  Modelo Data Science (Python)           │
 │  - Limpieza de texto                    │
 │  - Extracción de features               │
 │  - Predicción de sentimiento            │
