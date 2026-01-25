@@ -11,7 +11,7 @@
 Esta documentación describe el contrato de la API REST para el análisis de sentimiento de comentarios de clientes.
 
 **Base URL:**
-- Desarrollo: `http://localhost:8080/v1`
+- Desarrollo: `http://localhost:8080` (endpoints bajo `/v1`)
 - Producción: (Pendiente de despliegue)
 
 **Formato:** JSON  
@@ -164,7 +164,48 @@ Analiza múltiples textos en una sola petición y devuelve resultados por cada e
 
 ---
 
-### 2.3 Analytics (Historial por rango)
+### 2.3 Estadísticas del Dashboard
+
+Devuelve métricas agregadas para el dashboard (conteos y porcentajes).
+
+**Método:** `GET`  
+**Ruta:** `/v1/stats`
+
+**Response - Éxito (200 OK):**
+```json
+{
+  "total_analizados": 120,
+  "positivos": 80,
+  "negativos": 40,
+  "porcentaje_positivos": "67%",
+  "porcentaje_negativos": "33%",
+  "top_words_pos": {"great": 10, "excellent": 8},
+  "top_words_neg": {"bad": 6, "late": 5}
+}
+```
+
+---
+
+### 2.4 Analytics (Resumen)
+
+Entrega un resumen técnico de totales y promedio de confianza del sistema.
+
+**Método:** `GET`  
+**Ruta:** `/v1/analytics`
+
+**Response - Éxito (200 OK):**
+```json
+{
+  "totalAnalisis": 120,
+  "positivos": 80,
+  "negativos": 40,
+  "promedioConfianza": 0.86
+}
+```
+
+---
+
+### 2.5 Analytics (Historial por rango)
 
 Obtiene registros y métricas agregadas por rango de fechas, con paginación y filtro opcional por sentimiento.
 
@@ -208,7 +249,7 @@ Obtiene registros y métricas agregadas por rango de fechas, con paginación y f
 }
 ```
 
-### 2.4 Exportar Analytics (CSV)
+### 2.6 Exportar Analytics (CSV)
 
 Exporta el historial filtrado en formato CSV.
 

@@ -191,17 +191,18 @@ python app.py
 
 ---
 
-## 📖 Uso Básico
+## 📖 Uso de Endpoints
 
-### Ejemplo Mínimo
+Todos los endpoints pueden probarse desde el dashboard, con cURL o con Postman. Antes de cada endpoint encontrarás un breve texto con la forma recomendada de probarlo.
+
+### `POST /v1/sentiment`
+Puedes probarlo desde el dashboard en **Inicio**, ingresando un texto individual y revisando la predicción. Para pruebas rápidas en consola usa cURL, y en Postman envía un body raw JSON.
 
 ```bash
 curl -X POST http://localhost:8080/v1/sentiment \
   -H "Content-Type: application/json" \
   -d '{"text": "The service was excellent and very helpful"}'
 ```
-
-### Respuesta
 
 ```json
 {
@@ -210,9 +211,95 @@ curl -X POST http://localhost:8080/v1/sentiment \
 }
 ```
 
-La respuesta puede incluir opcionalmente `textoTraducido` y `palabrasClave`
-cuando el microservicio de Data Science las devuelve.
+La respuesta puede incluir opcionalmente `textoTraducido` y `palabrasClave` cuando el microservicio de Data Science las devuelve.
 
+### `POST /v1/sentiment/batch`
+Puedes probarlo desde el dashboard en **Batch**, cargando un CSV o ingresando un conjunto de textos. En cURL/Postman envía el arreglo en `texts`.
+
+```bash
+curl -X POST http://localhost:8080/v1/sentiment/batch \
+  -H "Content-Type: application/json" \
+  -d '{"texts": ["Great service", "Terrible support"]}'
+```
+
+```json
+{
+  "total": 2,
+  "results": [
+    { "prevision": "Positivo", "probabilidad": 0.93 },
+    { "prevision": "Negativo", "probabilidad": 0.88 }
+  ]
+}
+```
+
+### `GET /v1/stats`
+Puedes ver estos valores en el dashboard en **Inicio** (métricas generales). Para validarlo en consola usa cURL/Postman con una petición GET.
+
+```bash
+curl http://localhost:8080/v1/stats
+```
+
+```json
+{
+  "total_analizados": 120,
+  "positivos": 80,
+  "negativos": 40,
+  "porcentaje_positivos": "67%",
+  "porcentaje_negativos": "33%",
+  "top_words_pos": { "great": 10, "excellent": 8 },
+  "top_words_neg": { "bad": 6, "late": 5 }
+}
+```
+
+### `GET /v1/analytics`
+Puedes usar este endpoint como resumen técnico y comparar los totales con lo que muestra el dashboard. Para pruebas directas usa cURL o Postman con un GET.
+
+```bash
+curl http://localhost:8080/v1/analytics
+```
+
+```json
+{
+  "totalAnalisis": 120,
+  "positivos": 80,
+  "negativos": 40,
+  "promedioConfianza": 0.86
+}
+```
+
+### `GET /v1/analytics/range`
+En el dashboard puedes probarlo en **Historial** filtrando por rango y sentimiento. En cURL/Postman envía los query params.
+
+```bash
+curl "http://localhost:8080/v1/analytics/range?startDate=01-01-2026&endDate=31-01-2026&sentiment=Positivo&page=0&size=15"
+```
+
+```json
+{
+  "desde": "01-01-2026",
+  "hasta": "31-01-2026",
+  "total": 120,
+  "positivos": 80,
+  "negativos": 40,
+  "porcentajePositivos": "67%",
+  "porcentajeNegativos": "33%",
+  "topWordsPos": { "great": 10, "excellent": 8 },
+  "topWordsNeg": { "bad": 6, "late": 5 },
+  "registros": [],
+  "page": 0,
+  "size": 15,
+  "totalPages": 8
+}
+```
+
+### `GET /v1/analytics/range/export`
+En el dashboard puedes exportar desde **Historial** usando el botón de descarga. En cURL/Postman usa el endpoint de exportación para bajar el CSV.
+
+```bash
+curl -O -J "http://localhost:8080/v1/analytics/range/export?startDate=01-01-2026&endDate=31-01-2026"
+```
+
+Para ejemplos completos, validaciones, códigos de error y más detalles, consulta [docs/API-CONTRACT.md](docs/API-CONTRACT.md).
 
 ## 🧭 Navegación del Dashboard
 
@@ -222,26 +309,6 @@ El dashboard está dividido en tres páginas principales:
 - **Batch**: carga CSV y resultados masivos con detalle en modal.
 
 Acceso por defecto: `http://localhost:3000`
-
-### Otros endpoints útiles
-
-```bash
-# Batch
-curl -X POST http://localhost:8080/v1/sentiment/batch \
-  -H "Content-Type: application/json" \
-  -d '{"texts": ["Great service", "Terrible support"]}'
-
-# Stats
-curl http://localhost:8080/v1/stats
-
-# Historial por rango
-curl "http://localhost:8080/v1/analytics/range?startDate=01-01-2026&endDate=31-01-2026&sentiment=Positivo&page=0&size=15"
-
-# Export CSV
-curl -O -J "http://localhost:8080/v1/analytics/range/export?startDate=01-01-2026&endDate=31-01-2026"
-```
-
-Para ejemplos completos, validaciones, códigos de error y más detalles, consulta [docs/API-CONTRACT.md](docs/API-CONTRACT.md).
 
 ---
 
@@ -338,22 +405,13 @@ Este proyecto sigue un flujo de trabajo basado en Git Flow. Para más detalles s
 
 ---
 
-## 🧪 Testing
-
-### Backend
-
-```bash
-cd backend
-./mvnw test
-```
-
 ### Data Science
 
 Los tests del modelo se realizan en el notebook de Jupyter, incluyendo métricas de desempeño (Accuracy, Precision, Recall, F1-score).
 
 ---
 
-## ⚠️ Limitaciones Actuales
+## ⚠️ Especificaciones extras
 
 - **Idioma**: El microservicio DS detecta idioma y traduce a inglés para el análisis
 - **Longitud**: Textos entre 10 y 500 caracteres
